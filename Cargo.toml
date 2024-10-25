@@ -1,0 +1,11 @@
+[package]
+name = "http_proxy_server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+hyper = "0.14"            # HTTP library
+tokio = { version = "1", features = ["full"] }  # Async runtime
+dashmap = "5"             # Concurrent hashmap for in-memory caching
+tracing = "0.1"           # Logging
+tracing-subscriber = "0.3"  # Logger setup
