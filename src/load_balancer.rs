@@ -1,21 +1,22 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
-use tokio::sync::Mutex;
+use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct LoadBalancer {
     backends: Vec<String>,
-    index: AtomicUsize,
+    counter: Arc<AtomicUsize>,
 }
 
 impl LoadBalancer {
     pub fn new(backends: Vec<String>) -> Self {
-        Self {
+        LoadBalancer {
             backends,
-            index: AtomicUsize::new(0),
+            counter: Arc::new(AtomicUsize::new(0)),
         }
     }
 
-    pub fn get_next_backend(&self) -> &str {
-        let idx = self.index.fetch_add(1, Ordering::SeqCst) % self.backends.len();
-        &self.backends[idx]
+    pub fn next_backend(&self) -> String {
+        let index = self.counter.fetch_add(1, Ordering::SeqCst) % self.backends.len();
+        self.backends[index].clone()
     }
 }
