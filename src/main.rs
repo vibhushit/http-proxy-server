@@ -11,7 +11,7 @@ use tracing_subscriber;
 async fn main() {
     tracing_subscriber::fmt::init(); // Initialize logger
 
-    let addr = "127.0.0.1:3000".parse().unwrap();
+    let addr: String = "127.0.0.1:3000".parse().unwrap();
     let listener = TcpListener::bind(&addr).await.unwrap();
 
     let server = ProxyServer::new(vec![
