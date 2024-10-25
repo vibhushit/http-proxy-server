@@ -1,25 +1,31 @@
-mod server;
+use tokio::net::TcpListener;
+use std::sync::Arc;
+use dashmap::DashMap;
+
+mod proxy;
 mod cache;
 mod load_balancer;
 
-use server::ProxyServer;
-use tokio::net::TcpListener;
-use tracing::info;
-use tracing_subscriber;
-
 #[tokio::main]
-async fn main() {
-    tracing_subscriber::fmt::init(); // Initialize logger
-
-    let addr: String = "127.0.0.1:3000".parse().unwrap();
-    let listener = TcpListener::bind(&addr).await.unwrap();
-
-    let server = ProxyServer::new(vec![
-        "http://localhost:4001".to_string(),
-        "http://localhost:4002".to_string(),
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let cache = Arc::new(DashMap::new());
+    let load_balancer = load_balancer::LoadBalancer::new(vec![
+        "http://localhost:8081".to_string(),
+        "http://localhost:8082".to_string(),
     ]);
 
-    info!("Starting proxy server on http://{}", addr);
-    server.run(listener).await;
-}
+    let listener = TcpListener::bind("127.0.0.1:3000").await?;
+    println!("Proxy server listening on http://127.0.0.1:3000");
 
+    loop {
+        let (stream, _) = listener.accept().await?;
+        let cache = Arc::clone(&cache);
+        let load_balancer = load_balancer.clone();
+
+        tokio::spawn(async move {
+            if let Err(e) = proxy::handle_client(stream, cache, load_balancer).await {
+                eprintln!("Error handling client: {}", e);
+            }
+        });
+    }
+}
