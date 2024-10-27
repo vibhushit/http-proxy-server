@@ -1,6 +1,7 @@
+use cache::Cache;
 use tokio::net::TcpListener;
 use std::sync::Arc;
-use dashmap::DashMap;
+// use dashmap::DashMap;
 
 mod proxy;
 mod cache;
@@ -8,7 +9,7 @@ mod load_balancer;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let cache = Arc::new(DashMap::new());
+    let cache = Arc::new(Cache::new());
     let load_balancer = load_balancer::LoadBalancer::new(vec![
         "http://localhost:8081".to_string(),
         "http://localhost:8082".to_string(),

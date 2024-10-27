@@ -1,13 +1,13 @@
 use tokio::net::TcpStream;
 use std::sync::Arc;
-use dashmap::DashMap;
+// use dashmap::DashMap;
 use crate::cache::Cache;
 use crate::load_balancer::LoadBalancer;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 pub async fn handle_client(
     mut stream: TcpStream,
-    cache: Arc<DashMap<String, String>>,
+    cache: Arc<Cache>,
     load_balancer: LoadBalancer,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut buffer = [0; 1024];
